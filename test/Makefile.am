@@ -17,7 +17,8 @@ TESTS_ENVIRONMENT =				\
   libfakeroot=libfakeroot-0$(DLSUFFIX)		\
   srcdir=$(srcdir)				\
   suffix=$(suffix)				\
-  posixshell=$(SHELL)
+  posixshell=$(SHELL)				\
+  sqlite=y
 
 CLEANFILES = tmp* tartest.tar.gz hda3
 
