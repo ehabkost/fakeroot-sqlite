@@ -153,7 +153,7 @@ static volatile int detached = 0;
 #endif /* FAKEROOT_FAKENET */
 
 int debug = 0, unknown_is_real = 0;
-char *save_file = NULL;
+const char *save_file = NULL;
 
 void cleanup(int);
 
@@ -185,8 +185,13 @@ void debug_stat(const struct fakestat *st){
 	  st->rdev);
 }
 
+#ifdef FAKEROOT_SQLITE
+/* sqlite-based implementation */
+#  include "faked-sqlite.c"
+#else
 /* hashtable + text file implementation */
-#include "faked-text.c"
+#  include "faked-text.c"
+#endif
 
 #ifdef FAKEROOT_FAKENET
 static struct {
@@ -722,10 +727,17 @@ int main(int argc, char **argv){
       foreground = 1;
     else if(!strcmp(*argv,"--debug"))
       debug=1;
+#ifdef FAKEROOT_SQLITE
+    else if(!strcmp(*argv, "--database")) {
+      save_file=*(++argv);
+      load=1;
+    }
+#else
     else if(!strcmp(*argv,"--save-file"))
       save_file=*(++argv);
     else if(!strcmp(*argv,"--load"))
       load=1;
+#endif
     else if(!strcmp(*argv,"--unknown-is-real"))
       unknown_is_real = 1;
     else if(!strcmp(*argv,"--version")) {

@@ -11,7 +11,15 @@ libfakeroot_la_LDFLAGS=-release 0
 libfakeroot_la_DEPENDENCIES=wrapdef.h wrapstruct.h libcommunicate.la $(LTLIBOBJS)
 libfakeroot_la_LIBADD = libcommunicate.la $(LTLIBOBJS)
 
-bin_PROGRAMS=faked
+if FAKEROOT_SQLITE
+faked_sqlite_SOURCES = faked.c
+faked_sqlite_CPPFLAGS = -DFAKEROOT_SQLITE $(SQLITE_CFLAGS)
+faked_sqlite_LDADD = libcommunicate.la
+faked_sqlite_LDFLAGS = $(SQLITE_LIBS)
+FAKED_SQLITE = faked-sqlite
+endif
+
+bin_PROGRAMS = faked $(FAKED_SQLITE)
 faked_SOURCES = faked.c
 faked_LDADD = libcommunicate.la
 

@@ -7,9 +7,9 @@ usage () {
 cat - >&2 <<EOF
 fakeroot, create a fake root environment.
    usage: fakeroot [-l|--lib fakerootlib] [-f|--faked fakedbin]
-                   [-i file] [-s file] [-u|--unknown-is-real]
-                   [-d|--debug] [-b|--fd-base fd] [-h|--help]
-                   [-v|--version]
+                   [-i file] [-s file] [-D|--database file]
+                   [-u|--unknown-is-real] [-d|--debug] [-b|--fd-base fd]
+                   [-h|--help] [-v|--version]
                    [--] [command]
 EOF
   exit 1
@@ -47,10 +47,10 @@ libfound=no
 GETOPTEST=`getopt --version`
 case $GETOPTEST in
 getopt*) # GNU getopt
-    TEMP=`getopt -l lib: -l faked: -l unknown-is-real -l debug -l fd-base: -l version -l help -- +l:f:i:s:ub:dvh "$@"`
+    TEMP=`getopt -l lib: -l faked: -l unknown-is-real -l database: -l debug -l fd-base: -l version -l help -- +l:f:i:s:ub:D:dvh "$@"`
     ;;
 *) # POSIX getopt ?
-    TEMP=`getopt l:f:i:s:ub:dvh "$@"`
+    TEMP=`getopt l:f:i:s:ub:D:dvh "$@"`
     ;;
 esac
 
@@ -63,6 +63,7 @@ eval set -- "$TEMP"
 FAKEDOPTS=""
 PIPEIN=""
 WAITINTRAP=0
+FORCE_FAKED=
 
 while test "X$1" != "X--"; do
   case "$1" in
@@ -73,7 +74,7 @@ while test "X$1" != "X--"; do
        ;;
     -f|--faked)
        shift
-       FAKED="$1"
+       FORCE_FAKED="$1"
        ;;
     -i)
        shift
@@ -91,6 +92,12 @@ while test "X$1" != "X--"; do
        ;;
     -d|--debug)
       FAKEDOPTS=$FAKEDOPTS" --debug"
+      ;;
+    -D|--database)
+      shift
+      FAKEDOPTS=$FAKEDOPTS" --database $1"
+      FAKED="faked-sqlite"
+      WAITINTRAP=1
       ;;
     -u|--unknown-is-real)
        FAKEDOPTS=$FAKEDOPTS" --unknown-is-real"
@@ -112,6 +119,10 @@ while test "X$1" != "X--"; do
 done
 
 shift #get rid of the '--'
+
+if [ -n "$FORCE_FAKED" ];then
+	FAKED="$FORCE_FAKED"
+fi
 
 # make sure the preload is available
 ABSLIB=""

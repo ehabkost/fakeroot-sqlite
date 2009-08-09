@@ -55,6 +55,16 @@ else
 signal=TERM
 fi
 
+PKG_CHECK_MODULES([SQLITE], [sqlite3], [
+has_sqlite=yes
+],[
+has_sqlite=no
+])
+
+AM_CONDITIONAL(FAKEROOT_SQLITE, [test x$has_sqlite = xyes])
+AC_SUBST(SQLITE_CFLAGS)
+AC_SUBST(SQLITE_LIBS)
+
 AC_SUBST(signal)
 
 dnl Checks for header files.
