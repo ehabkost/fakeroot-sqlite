@@ -3,6 +3,7 @@
 me=`basename $0`
 tmp=$me.dir
 rm -rf $tmp
+mkdir "$tmp"
 trap 'rm -rf $tmp' EXIT
 
 # The name of LD_PRELOAD on this platform.

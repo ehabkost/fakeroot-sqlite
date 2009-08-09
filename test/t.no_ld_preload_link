@@ -1,6 +1,6 @@
 #!/bin/sh
 . ./defs || exit 1
-mkdir $tmp
+
 run_fakeroot -- \
  ${posixshell} -c "touch $tmp/justafile &&
                    ln -s justafile $tmp/alink &&

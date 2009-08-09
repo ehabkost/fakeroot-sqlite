@@ -1,7 +1,6 @@
 #!/bin/sh
 . ./defs || exit 1
 
-mkdir $tmp
 run_fakeroot -- \
   ${posixshell} -c 'mknod $tmp/hda3 b 3 1; ls -l $tmp/hda3' >$tmp/out
 cat $tmp/out
