@@ -9,8 +9,9 @@ trap 'rm -rf $tmp' EXIT
 # The name of LD_PRELOAD on this platform.
 LDPRELOADVAR=@LDPRELOADVAR@
 
+debugargs=
 case $VERBOSE in
-  (x)  set -x;;                # Debug mode.
+  (x)  set -x;debugargs=--debug;;                # Debug mode.
   ('') exec >/dev/null 2>&1;;  # By default, be silent.
 esac
 
@@ -20,5 +21,6 @@ run_fakeroot ()
   $PWD/../scripts/fakeroot${tcp}                \
       -f $PWD/../faked${tcp}                    \
       -l $PWD/../.libs/${libfakeroot}           \
+      $debugargs                                \
        "$@"
 }
