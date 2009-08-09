@@ -15,12 +15,23 @@ case $VERBOSE in
   ('') exec >/dev/null 2>&1;;  # By default, be silent.
 esac
 
+case $sqlite in
+  y)
+    fakedsuffix=-sqlite
+    args="--database $tmp/fakeroot.db"
+  ;;
+  *)
+    fakedsuffix=
+    args=
+  ;;
+esac
+
 run_fakeroot ()
 {
   tmp="$tmp"                                    \
   $PWD/../scripts/fakeroot${tcp}                \
-      -f $PWD/../faked${tcp}                    \
+      -f $PWD/../faked${fakedsuffix}${tcp}      \
       -l $PWD/../.libs/${libfakeroot}           \
-      $debugargs                                \
+      $debugargs $args                          \
        "$@"
 }
