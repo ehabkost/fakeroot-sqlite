@@ -589,7 +589,7 @@ void insert_or_overwrite(struct fakestat *st,
     data_insert(st, remote);
   }
   else
-	memcpy(data_node_get(i), st, sizeof (struct fakestat));
+    memcpy(data_node_get(i), st, sizeof (struct fakestat));
 }
 
 /*******************************************/
