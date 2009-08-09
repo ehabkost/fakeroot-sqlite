@@ -285,7 +285,6 @@ static unsigned int data_size(void)
 }
 
 #define data_begin()  (data_node_next(NULL))
-#define data_end()    (NULL)
 
 
 #ifdef FAKEROOT_FAKENET
@@ -489,7 +488,7 @@ int save_database(const uint32_t remote)
   if(!f)
     return EOF;
 
-  for (i = data_begin(); i != data_end(); i = data_node_next(i)) {
+  for (i = data_begin(); i; i = data_node_next(i)) {
     if (i->remote != remote)
       continue;
 
@@ -582,7 +581,7 @@ void insert_or_overwrite(struct fakestat *st,
   data_node_t *i;
   
   i = data_find(st, remote);
-  if (i == data_end()) {
+  if (!i) {
     if(debug){
       fprintf(stderr,"FAKEROOT: insert_or_overwrite unknown stat:\n");
       debug_stat(st);
@@ -610,7 +609,7 @@ void process_chown(struct fake_msg *buf){
     debug_stat(&buf->st);
   }
   i = data_find(&buf->st, buf->remote);
-  if (i != data_end()) {
+  if (i) {
     stptr = data_node_get(i);
     /* From chown(2): If  the owner or group is specified as -1, 
        then that ID is not changed. 
@@ -652,7 +651,7 @@ void process_chmod(struct fake_msg *buf){
 	    (long)buf->st.mode);
   
   i = data_find(&buf->st, buf->remote);
-  if (i != data_end()) {
+  if (i) {
     st = data_node_get(i);
     /* Statically linked binaries can remove inodes without us knowing.
        ldconfig is a prime offender.  Also, some packages run tests without
@@ -698,7 +697,7 @@ void process_mknod(struct fake_msg *buf){
 	    (long)buf->st.mode);
   
   i = data_find(&buf->st, buf->remote);
-  if (i != data_end()) {
+  if (i) {
     st = data_node_get(i);
     st->mode = buf->st.mode;
     st->rdev = buf->st.rdev;
@@ -719,7 +718,7 @@ void process_stat(struct fake_msg *buf){
     fprintf(stderr,"FAKEROOT: process stat oldstate=");
     debug_stat(&buf->st);
   }
-  if (i == data_end()) {
+  if (!i) {
     if (debug)
       fprintf(stderr,"FAKEROOT:    (previously unknown)\n");
     if (!unknown_is_real) {
@@ -747,14 +746,14 @@ void process_unlink(struct fake_msg *buf){
      (S_ISDIR(buf->st.mode)&&(buf->st.nlink==2))){
     data_node_t *i;
     i = data_find(&buf->st, buf->remote);
-    if (i != data_end()) {
+    if (i) {
       if(debug){
 	fprintf(stderr,"FAKEROOT: unlink known file, old stat=");
 	debug_stat(data_node_get(i));
       }
       data_erase(i);
     }
-    if (data_find(&buf->st, buf->remote) != data_end()) {
+    if (data_find(&buf->st, buf->remote)) {
       fprintf(stderr,"FAKEROOT************************************************* cannot remove stat (a \"cannot happen\")\n");
     }
   }
@@ -765,7 +764,7 @@ void debugdata(int dummy UNUSED){
   data_node_t *i;
 
   fprintf(stderr," FAKED keeps data of %i inodes:\n", data_size());
-  for (i = data_begin(); i != data_end(); i = data_node_next(i))
+  for (i = data_begin(); i; i = data_node_next(i))
     debug_stat(data_node_get(i));
 
   errno = stored_errno;
