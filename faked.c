@@ -869,11 +869,12 @@ int main(int argc, char **argv){
       fflush(stdout);
 
       /* This is the child closing its file descriptors. */
-      for (fl= 0; fl <= num_fds; ++fl)
-#ifdef FAKEROOT_FAKENET
-	if (fl != sd)
-#endif /* FAKEROOT_FAKENET */
-	  close(fl);
+      close(0); /* stdin */
+      close(1); /* stdout */
+      if (!debug)
+        close(2); /* stderr */
+      /* No other FDs are closed because sqlite may be using them */
+
       setsid();
     } else {
       printf("%li:%i\n",(long)FAKE_KEY,pid);
