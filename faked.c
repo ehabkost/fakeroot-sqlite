@@ -231,6 +231,10 @@ static void data_insert(const struct fakestat *buf,
   n->remote = (uint32_t) remote;
 }
 
+/** Erase record
+ *
+ * A data_put() call is implicit.
+ */
 static data_node_t *data_erase(data_node_t *pos)
 {
   data_node_t *n, *prev = NULL, *next;
@@ -576,7 +580,21 @@ void debug_stat(const struct fakestat *st){
 	  st->rdev);
 }
 
-void insert_or_overwrite(struct fakestat *st,
+/** Called when the data on data_node_t was updated
+ */
+static void data_update(data_node_t *i)
+{
+}
+
+/** Drop reference to struct returned by data_find()
+ *
+ * Passing NULL as parameter is valid.
+ */
+static void data_put(data_node_t *i)
+{
+}
+
+static void insert_or_overwrite(struct fakestat *st,
 			 const uint32_t remote){
   data_node_t *i;
   
@@ -588,8 +606,11 @@ void insert_or_overwrite(struct fakestat *st,
     }
     data_insert(st, remote);
   }
-  else
+  else {
     memcpy(data_node_get(i), st, sizeof (struct fakestat));
+    data_update(i);
+  }
+  data_put(i);
 }
 
 /*******************************************/
@@ -628,6 +649,7 @@ void process_chown(struct fake_msg *buf){
       stptr->uid=buf->st.uid;
     if ((uint32_t)buf->st.gid != (uint32_t)-1)
       stptr->gid=buf->st.gid;
+    data_update(i);
   }
   else{
     st=buf->st;
@@ -640,6 +662,7 @@ void process_chown(struct fake_msg *buf){
        st.gid = 0;
     insert_or_overwrite(&st, buf->remote);
   }
+  data_put(i);
 }
 
 void process_chmod(struct fake_msg *buf){
@@ -679,13 +702,15 @@ void process_chmod(struct fake_msg *buf){
     else{
       st->mode = (buf->st.mode&~S_IFMT) | (st->mode&S_IFMT);
     }
+    data_update(i);
   }
   else{
     st=&buf->st;
     st->uid=0;
     st->gid=0;
+    insert_or_overwrite(st, buf->remote);
   }
-  insert_or_overwrite(st, buf->remote);
+  data_put(i);
 }
 
 void process_mknod(struct fake_msg *buf){
@@ -701,13 +726,15 @@ void process_mknod(struct fake_msg *buf){
     st = data_node_get(i);
     st->mode = buf->st.mode;
     st->rdev = buf->st.rdev;
+    data_update(i);
   }
   else{
     st=&buf->st;
     st->uid=0;
     st->gid=0;
+    insert_or_overwrite(st, buf->remote);
   }
-  insert_or_overwrite(st, buf->remote);
+  data_put(i);
 }
 
 void process_stat(struct fake_msg *buf){
@@ -735,6 +762,7 @@ void process_stat(struct fake_msg *buf){
 
   }
   faked_send_fakem(buf);
+  data_put(i);
 }
 //void process_fstat(struct fake_msg *buf){
 //  process_stat(buf);
@@ -753,8 +781,9 @@ void process_unlink(struct fake_msg *buf){
       }
       data_erase(i);
     }
-    if (data_find(&buf->st, buf->remote)) {
+    if ( (i = data_find(&buf->st, buf->remote)) ) {
       fprintf(stderr,"FAKEROOT************************************************* cannot remove stat (a \"cannot happen\")\n");
+      data_put(i);
     }
   }
 }
