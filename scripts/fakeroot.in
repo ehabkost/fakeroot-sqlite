@@ -8,7 +8,8 @@ cat - >&2 <<EOF
 fakeroot, create a fake root environment.
    usage: fakeroot [-l|--lib fakerootlib] [-f|--faked fakedbin]
                    [-i file] [-s file] [-u|--unknown-is-real]
-		   [-b|--fd-base fd] [-h|--help] [-v|--version]
+                   [-d|--debug] [-b|--fd-base fd] [-h|--help]
+                   [-v|--version]
                    [--] [command]
 EOF
   exit 1
@@ -46,10 +47,10 @@ libfound=no
 GETOPTEST=`getopt --version`
 case $GETOPTEST in
 getopt*) # GNU getopt
-    TEMP=`getopt -l lib: -l faked: -l unknown-is-real -l fd-base: -l version -l help -- +l:f:i:s:ub:vh "$@"`
+    TEMP=`getopt -l lib: -l faked: -l unknown-is-real -l debug -l fd-base: -l version -l help -- +l:f:i:s:ub:dvh "$@"`
     ;;
 *) # POSIX getopt ?
-    TEMP=`getopt l:f:i:s:ub:vh "$@"`
+    TEMP=`getopt l:f:i:s:ub:dvh "$@"`
     ;;
 esac
 
@@ -88,6 +89,9 @@ while test "X$1" != "X--"; do
        FAKEDOPTS=$FAKEDOPTS" --save-file $1"
        [ -p $1 ] || WAITINTRAP=1
        ;;
+    -d|--debug)
+      FAKEDOPTS=$FAKEDOPTS" --debug"
+      ;;
     -u|--unknown-is-real)
        FAKEDOPTS=$FAKEDOPTS" --unknown-is-real"
        FAKED_MODE="unknown-is-real"
