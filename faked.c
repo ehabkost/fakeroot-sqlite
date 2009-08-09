@@ -564,6 +564,10 @@ int load_database(const uint32_t remote)
     return 0;
 }
 
+static void close_database(void)
+{
+}
+
 /*********************************/
 /*                               */
 /* data base maintainance        */
@@ -981,6 +985,7 @@ void cleanup(int g)
 #endif /* ! FAKEROOT_FAKENET */
 
   save(0);
+  close_database();
 
   if(g!=-1)
     exit(0);
