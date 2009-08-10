@@ -22,4 +22,9 @@ TESTS_ENVIRONMENT =				\
 CLEANFILES = tmp* tartest.tar.gz hda3
 
 check_SCRIPTS = $(TESTS) echo_arg tartest compare-tar defs
+check_PROGRAMS = timedstat timedchown
+
+timedstat_SOURCES = timedstat.c
+timedchown_SOURCES = timedchown.c
+
 EXTRA_DIST = $(check_SCRIPTS) tartest.tar.gz.uue
